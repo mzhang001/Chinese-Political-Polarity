@@ -3,3 +3,5 @@ data/*
 .idea/*
 venv
 venv/*
+*.pyc
+db.sqlite3
