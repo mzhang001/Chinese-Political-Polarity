@@ -4,11 +4,11 @@ from django.db import models
 
 
 class Question(models.Model):
-    text = models.CharField(max_length=300)
+    desc = models.CharField(max_length=300)
 
 
 class User(models.Model):
-    id = models.IntegerField()
+    uid = models.IntegerField()
     ip_address = models.CharField(max_length=20)
     income = models.CharField(max_length=30)
     birth_year = models.IntegerField()
