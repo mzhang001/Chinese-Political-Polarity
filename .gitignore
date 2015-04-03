@@ -3,3 +3,5 @@ data/*
 .idea/*
 venv
 venv/*
+dashboard/data/*
+db.sqlite3
