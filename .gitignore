@@ -3,5 +3,6 @@ data/*
 .idea/*
 venv
 venv/*
-*.pyc
+dashboard/data/*
 db.sqlite3
+*.pyc

@@ -9,12 +9,12 @@ class Question(models.Model):
 
 class User(models.Model):
     uid = models.IntegerField()
-    ip_address = models.CharField(max_length=20)
-    income = models.CharField(max_length=30)
-    birth_year = models.IntegerField()
-    is_male = models.BooleanField(default=True)
-    education_background = models.CharField(max_length=20)
-    time_created = models.DateTimeField()
+    ip_address = models.CharField(max_length=20, blank=True)
+    income = models.CharField(max_length=30, blank=True)
+    birth_year = models.IntegerField(null=True)
+    is_male = models.NullBooleanField()
+    education_background = models.CharField(max_length=20, blank=True)
+    time_created = models.DateTimeField(null=True)
 
 
 class Answer(models.Model):
