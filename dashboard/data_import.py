@@ -1,15 +1,13 @@
 __author__ = 'mengzhang'
 
-import os
+import os,sys
 import time
 import csv
 from urllib import request
 from dashboard.models import User, Question, Answer
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
-
-file_path = "data/2014data.csv"
-answers = []
+from django.db import transaction
 
 option_map = {
     "强烈同意": 0,  # Strong agreement
@@ -18,71 +16,60 @@ option_map = {
     "强烈反对": 3,  # Strong disagreement
 }
 
-directory = os.path.dirname(file_path)
-if not os.path.exists(directory):
-    os.makedirs(directory)
+file_path = "dashboard/data/2014data.csv"
+question_list = {}
 
-# Download csv file from the website
-if not os.path.isfile(file_path):
-    request.urlretrieve('http://zuobiao.me/resources/2014data.csv', file_path)
+def populate_question_list():
+    f = open(file_path)
+    line = f.readline()
+    items = line.split(",")
+    for i in items:
+        if i not in ['序号', '参与时间', 'IP 地址', '性别', '出生年份', '年收入', '学历\n']:
+            question_list[i] = Question(desc=i)
+    f.close()
 
-with open(file_path, 'r') as csvfile:
-    data_reader = csv.reader(csvfile, delimiter=',')
-    # Store all questions into database
-    questions = next(data_reader)
-    questions = questions[3:-4]
-    questions_model = []
-    for question in questions:
-        q_db = Question(desc=question)
-        q_db.save()
-        questions_model.append(q_db)
+def parse():
+    f = open(file_path)
+    entry_list = []
+    try:
+        reader = csv.DictReader(f)
+        for i in reader:
+            entry_list.append(i)
+    finally:
+        f.close()
+    return entry_list
 
-    num_of_questions = len(questions)
-    count = 0
-    for row in data_reader:
-        count += 1
-        if count % 100 == 0:
-            print(count)
-        user_args = {
-            "uid": int(row[0])
-        }
-
-        if row[-1]:
-            user_args['education_background'] = row[-1]
-
-        if row[2]:
-            user_args['ip_address'] = row[2]
-
-        if row[-2]:
-            user_args['income'] = row[-2]
-
-        if row[-3]:
-            user_args['birth_year'] = int(row[-3])
-
-        if row[-4] == 'M':
-            user_args['is_male'] = True
-        elif row[-4] == 'F':
-            user_args['is_male'] = False
-
+@transaction.atomic
+def run():
+    populate_question_list()
+    for i in question_list:
+        question_list[i].save()
+    entry_list = parse()
+    for i in entry_list:
+        user_args = {}
+        user_args["uid"] = i["序号"]
+        sys.stdout.write("\r%s" % i["序号"])
+        sys.stdout.flush()
+        user_args["is_male"] = (i["性别"] == "M")
+        user_args["ip_address"] = i["IP 地址"]
+        user_args["birth_year"] = i["出生年份"] if i["出生年份"] != "" else None
+        user_args["income"] = i["年收入"] if i["年收入"] != "" else None
+        user_args["education_background"] = i["学历"]
         try:
-            t = row[1]
+            t = i["参与时间"]
             if t and t != 'NULL':
                 time.strptime(t, "%Y-%m-%d %H:%M:%S")
                 user_args['time_created'] = t
         except ValueError:
             pass
-
-        # try:
+        # print(user_args)
         user = User(**user_args)
         user.save()
-        # except IntegrityError:
-        # print(row)
-
-        for i in range(3, len(row)-4):
-            j = i - 3
-            answer = Answer(
-                question=questions_model[j],
-                user=user,
-                answer=option_map[row[i]]
-            )
-            answer.save()
+        for j in i:
+            if j not in ['序号', '参与时间', 'IP 地址', '性别', '出生年份', '年收入', '学历']:
+                answer = Answer(
+                    question = question_list[j],
+                    user = user,
+                    answer = option_map[i[j]]
+                )
+                answer.save()

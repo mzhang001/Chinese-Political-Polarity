@@ -5,3 +5,5 @@ venv
 venv/*
 dashboard/data/*
 db.sqlite3
+*.pyc
+db.sqlite3-journal

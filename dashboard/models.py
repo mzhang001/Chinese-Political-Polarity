@@ -1,8 +1,5 @@
 from django.db import models
 
-# Create your models here.
-
-
 class Question(models.Model):
     desc = models.CharField(max_length=300)
 
@@ -10,7 +7,7 @@ class Question(models.Model):
 class User(models.Model):
     uid = models.IntegerField()
     ip_address = models.CharField(max_length=20, blank=True)
-    income = models.CharField(max_length=30, blank=True)
+    income = models.CharField(max_length=30, blank=True, null=True)
     birth_year = models.IntegerField(null=True)
     is_male = models.NullBooleanField()
     education_background = models.CharField(max_length=20, blank=True)
