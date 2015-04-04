@@ -1,0 +1,8 @@
+To get this up and running you need to do the following:
+1. make sure there is no db.sqlite3 in your current folder
+2. install all the packages required 
+3. Remember to use python3
+4. first use python manage.py shell to open up a interactive shell
+5. type from dashboard import data_import to import the data_import module
+6. type data_import.run() to import all the data in the csv to your database... this step may take a while
+7. to be implemented...
